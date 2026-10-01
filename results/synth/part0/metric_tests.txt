@@ -15,4 +15,4 @@ tests/test_metrics.py::test_idf1_is_global_not_framewise PASSED          [ 77%]
 tests/test_metrics.py::test_iou_and_nms PASSED                           [ 88%]
 tests/test_metrics.py::test_average_precision PASSED                     [100%]
 
-============================== 9 passed in 0.54s ===============================
+============================== 9 passed in 0.39s ===============================

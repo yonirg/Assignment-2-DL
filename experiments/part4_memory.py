@@ -36,8 +36,11 @@ class _MaskArgs:
     min_vis, drop_p, p_occ, max_occ = 0.2, 0.0, 0.0, 1
 
 
-def gradient_horizon(model, tracklets, img_hs, K=48, B=256, seed=0):
-    """Média sobre janelas de ||∂L_K / ∂h_{K-k}||, k = 0..K-1 (perda só no último passo)."""
+def gradient_horizon(model, tracklets, img_hs, K=48, B=256, seed=0, part="h"):
+    """Média sobre janelas de ||∂L_K / ∂h_{K-k}||, k = 0..K-1 (perda só no último passo).
+
+    ``part='c'`` mede o gradiente na célula de memória da LSTM (onde mora a memória longa).
+    """
     rng = np.random.default_rng(seed)
     gen = torch.Generator().manual_seed(seed)
     sampler = WindowSampler(tracklets, img_hs, K, rng)
@@ -51,7 +54,8 @@ def gradient_horizon(model, tracklets, img_hs, K=48, B=256, seed=0):
     loss.backward()
     model.eval()
     H = model.hidden
-    norms = [states[K - 1 - k].grad[:, :H].norm(dim=1).mean().item() for k in range(K)]
+    sl = slice(0, H) if part == "h" else slice(H, 2 * H)
+    norms = [states[K - 1 - k].grad[:, sl].norm(dim=1).mean().item() for k in range(K)]
     return np.array(norms)
 
 
@@ -70,10 +74,11 @@ def long_tracklets(args):
 
 def plot_horizon(curves, path, K, title):
     fig, ax = plt.subplots(figsize=(7.5, 4.5))
-    for lab, (c, color, ls) in curves.items():
-        ax.semilogy(np.arange(K), c / c[0], ls, color=color, label=lab)
+    for lab, (c, color, ls, *ref) in curves.items():
+        ax.semilogy(np.arange(K), c / (ref[0] if ref else c[0]), ls, color=color, label=lab)
     ax.set_xlabel("k (passos para trás)")
     ax.set_ylabel(r"$\|\partial L_t / \partial h_{t-k}\|$  (normalizado por k=0)")
+    ax.set_ylim(bottom=1e-3)
     ax.grid(alpha=0.3, which="both")
     ax.legend(fontsize=8)
     ax.set_title(title, fontsize=10)
@@ -210,6 +215,11 @@ def main():
         if os.path.exists(path):
             m, _ = MotionRNN.from_checkpoint(path)
             curves[f"{cell.upper()} (ablação, T=32)"] = (gradient_horizon(m, trs, hs, K), color, "-")
+            if cell == "lstm":
+                # ∂L/∂c no último passo é 0 (a saída lê só h): normaliza pelo h da própria LSTM em k=0
+                href = curves[f"{cell.upper()} (ablação, T=32)"][0][0]
+                curves["LSTM, célula c (ablação, T=32)"] = (gradient_horizon(m, trs, hs, K, part="c"), color, ":",
+                                                            href)
     curves[f"GRU final (T={T_train})"] = (gradient_horizon(model, trs, hs, K), "k", "--")
     if args.fix_ckpt and os.path.exists(args.fix_ckpt):
         mf, ckf = MotionRNN.from_checkpoint(args.fix_ckpt)

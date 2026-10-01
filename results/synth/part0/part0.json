@@ -18,7 +18,7 @@
   "count_err_rel": 0.0,
   "mAP": 0.9794999617293285,
   "occ_events": 0,
-  "occ_survival": 0.0
+  "occ_survival": NaN
  },
  "sweep": {
   "n_objects": {
@@ -37,7 +37,7 @@
      "count_err_rel": 0.03333333333333333,
      "mAP": 0.8933522015329641,
      "occ_events": 0,
-     "occ_survival": 0.0
+     "occ_survival": NaN
     },
     {
      "value": 6,
@@ -53,7 +53,7 @@
      "count_err_rel": 0.1,
      "mAP": 0.889323992734548,
      "occ_events": 0,
-     "occ_survival": 0.0
+     "occ_survival": NaN
     },
     {
      "value": 9,
@@ -135,7 +135,7 @@
      "count_err_rel": 0.13333333333333333,
      "mAP": 0.8933522015329641,
      "occ_events": 0,
-     "occ_survival": 0.0
+     "occ_survival": NaN
     },
     {
      "value": 6,
@@ -151,7 +151,7 @@
      "count_err_rel": 0.08333333333333333,
      "mAP": 0.889323992734548,
      "occ_events": 0,
-     "occ_survival": 0.0
+     "occ_survival": NaN
     },
     {
      "value": 9,
@@ -233,7 +233,7 @@
      "count_err_rel": 0.06666666666666667,
      "mAP": 0.8933522015329641,
      "occ_events": 0,
-     "occ_survival": 0.0
+     "occ_survival": NaN
     },
     {
      "value": 6,
@@ -249,7 +249,7 @@
      "count_err_rel": 0.11666666666666667,
      "mAP": 0.889323992734548,
      "occ_events": 0,
-     "occ_survival": 0.0
+     "occ_survival": NaN
     },
     {
      "value": 9,

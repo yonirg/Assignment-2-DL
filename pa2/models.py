@@ -90,6 +90,7 @@ class MotionRNN(nn.Module):
         if self.cell_type == "lstm":
             h, c = self.cell(x, (state[:, : self.hidden], state[:, self.hidden:]))
             new = torch.cat([h, c], 1)
+            h = new[:, : self.hidden]   # mesmo valor; mantém o estado concatenado no grafo
         else:
             h = self.cell(x, state)
             new = h
