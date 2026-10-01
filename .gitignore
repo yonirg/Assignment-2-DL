@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+data/MOT17/
+data/*.zip
+.pytest_cache/
