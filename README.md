@@ -5,7 +5,8 @@ Rastreamento multiobjeto *identity-aware* sem rastreador pronto: detector congel
 fragmentações, AP), o NMS, a associação e a gestão de tracks foram todos escritos do zero.
 
 * Roteiro da apresentação, com os resultados e as respostas às perguntas: **[APRESENTACAO.md](APRESENTACAO.md)**
-* Slides (com notas do apresentador): **`PA2_apresentacao.pptx`**
+* Slides (com notas do apresentador): **`PA2_apresentacao.pptx`** · versão curta (~15 min): **`PA2_apresentacao_curta.pptx`**
+* Vídeo com as previsões da RNN e a incerteza: `python tools/video_previsao.py --seq <sequência> --out <saída.mp4>`
 * Uso de IA: **[AI_LOG.md](AI_LOG.md)**
 
 ## Ambiente
