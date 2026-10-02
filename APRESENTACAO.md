@@ -1,13 +1,13 @@
 # PA2 — roteiro da apresentação
 
-> **Importante.** Todos os números abaixo são do **ambiente sintético** (Parte 0), gerados neste
-> repositório. O MOT17 não pôde ser baixado no ambiente em que o código foi escrito (o proxy bloqueava
-> `motchallenge.net`). Todo o pipeline do MOT17 está implementado e foi testado de ponta a ponta com
-> uma árvore falsa no formato MOT17. Para gerar as mesmas figuras e tabelas no MOT17 real:
-> `bash run_all.sh mot17 data/MOT17` (só o pacote de anotações de ~10 MB é obrigatório). As seções
-> marcadas com **[MOT17]** precisam desses números.
+> **Como ler.** As Partes 0–5 abaixo contam a história no **ambiente sintético**, onde cada fator
+> (velocidade, oclusão, densidade) é controlado. A seção **[MOT17 — resultados reais](#mot17--resultados-reais)**,
+> no fim, repete as mesmas Partes 1–5 no MOT17 real e mostra onde a história muda.
+> Os slides estão em `PA2_apresentacao.pptx`, com notas do apresentador em cada slide.
 
-Reprodução: `bash run_all.sh synth`. Cada figura citada está em `results/synth/partN/`.
+Reprodução: `bash run_all.sh synth` (figuras em `results/synth/partN/`) e
+`bash run_all.sh mot17 data/MOT17` (figuras em `results/mot17/partN/`; ~5 min em CPU, a galeria da
+Parte 4 precisa das imagens `img1/`).
 
 ---
 
@@ -60,8 +60,10 @@ também reduz o número de quadros visíveis avaliados.
 padrão: **FRCNN**. É da mesma família do detector do torchvision (Faster R-CNN), o que permite
 comparar as duas fontes sem trocar de arquitetura. Os scores ficam em [0,1], então um único
 `det_thr` vale para tudo (os do DPM não são calibrados). E evita o SDP, que é o melhor dos três
-e esconderia parte do problema de associação. `part1_baseline.py --data mot17` grava a tabela
-de mAP das 4 fontes (`detector_map.json`). Para o torchvision: `python -m pa2.detect --seq ...`.
+e esconderia parte do problema de associação. mAP@0,5 médio nas 7 sequências de treino do MOT17
+(`results/mot17/part1/detector_map.json`): **DPM 0,415 · FRCNN 0,542 · torchvision 0,647 · SDP 0,652**. O torchvision
+(Faster R-CNN v2 COCO, classe person, NMS próprio; `python -m pa2.detect`) fica quase empatado com o
+SDP e bem acima do FRCNN público. Comparação de rastreamento com ele na seção do MOT17.
 
 **Associação ingênua.** IoU entre a última caixa observada da track e a detecção, limiar fixo,
 ID novo quando nada casa, morte após k quadros. Varredura na **validação** (sementes 2000+,
@@ -226,6 +228,115 @@ entradas Δ ficam ruidosas, a velocidade estimada fica errada e a extrapolação
 passa a puxar a track para FPs. O Kalman, com ruído de processo explícito, degrada com mais
 suavidade. Treinar com ruído de entrada variável (ou passar o score como confiança da
 observação, que já entra na entrada) é a correção óbvia.
+
+## MOT17 — resultados reais
+
+Split por sequência: treino `02, 04, 05, 11` · validação `09` · teste `10, 13`. Detecções públicas
+**FRCNN**. A MotionRNN treina só com as trajetórias da gt (~15 s em CPU). Tudo gerado por
+`bash run_all.sh mot17 data/MOT17`; figuras em `results/mot17/partN/`.
+
+**Parte 1 — baseline e descolamento** (`part1/fig_decoupling.png`, `part1/fig_assoc_sweep.png`).
+Varredura na validação (MOT17-09): o guloso empata ou vence o Hungarian em **16 de 20**
+combinações. Melhor: guloso, IoU ≥ 0,5, k = 3 (IDF1 0,551). Com IoU ≥ 0,5 os dois matchers
+coincidem; com limiares baixos o Hungarian piora mais, de novo por forçar pares ruins.
+O descolamento existe, mas é mais fraco que no sintético, porque a densidade não é o único fator
+(câmera parada ou em movimento, altura da câmera):
+
+| sequência | caixas gt/quadro | mAP | IDF1 (IoU ingênuo) | #ids prev./verd. |
+|---|---|---|---|---|
+| MOT17-05 | 8,3 | 0,533 | 0,531 | 1,01 |
+| MOT17-09 | 10,1 | 0,568 | 0,551 | 1,92 |
+| MOT17-11 | 10,5 | 0,606 | 0,545 | 1,37 |
+| MOT17-13 | 15,5 | 0,582 | 0,398 | 2,85 |
+| MOT17-10 | 19,6 | 0,598 | 0,421 | 4,28 |
+| MOT17-02 | 31,0 | 0,352 | 0,363 | 1,79 |
+| MOT17-04 | 45,3 | 0,557 | 0,568 | 1,66 |
+
+De MOT17-05 a MOT17-10 o mAP *sobe* (0,53 → 0,60) enquanto o IDF1 cai (0,53 → 0,42) e a razão de
+identidades vai de 1,01 a 4,28. MOT17-04 é a mais densa, mas a câmera é fixa e alta e as pessoas
+andam devagar, então a associação ingênua funciona bem.
+
+**Parte 2 — teste (MOT17-10 + MOT17-13)** (`part2/table.md`):
+
+| rastreador | IDF1 | IDSW | Frag | #ids prev./verd. | oclusões com id preservada | mAP |
+|---|---|---|---|---|---|---|
+| IoU ingênuo | 0,410 | 591 | 563 | 3,34 | 17% | 0,590 |
+| Kalman v. const. | 0,493 | 397 | 640 | 0,86 | 51% | 0,590 |
+| **MotionRNN** | **0,500** | **383** | 598 | 1,63 | 40% | 0,590 |
+
+A RNN fica praticamente empatada com o Kalman (+0,7 ponto de IDF1, −14 switches), longe da folga do
+sintético (+7 pontos, 131 → 41 switches). **Por quê:** no sintético a vantagem vinha de movimento não
+linear (quicadas nas bordas, aceleração aleatória). Pedestres andam quase em linha reta e com
+velocidade quase constante, que é exatamente o modelo do Kalman. Sobra pouca dinâmica para a RNN
+aprender. O Kalman também preserva mais oclusões e acerta melhor a contagem. A RNN fragmenta mais
+(1,63 ids por pessoa), mas a amostra de oclusões é pequena (~45 eventos em 2 sequências).
+**Trocando o detector pelo torchvision** (`python -m pa2.evaluate --data mot17 --split test
+--ckpt checkpoints/mot17_gru.pt --det-file det_tv.txt`, saída em `part2/torchvision.json`):
+
+| rastreador | IDF1 FRCNN → torchvision | IDSW FRCNN → torchvision |
+|---|---|---|
+| IoU ingênuo | 0,410 → **0,372** | 591 → 880 |
+| Kalman | 0,493 → 0,494 | 397 → 513 |
+| MotionRNN | 0,500 → **0,517** | 383 → **350** |
+
+O mAP sobe de 0,590 para 0,665, e mesmo assim o IoU ingênuo *piora*: o torchvision gera quase o
+dobro de caixas (17,7 mil contra 9,7 mil em MOT17-10), então há mais candidatas perto de cada track
+e a associação por IoU com a última caixa se confunde mais (5,9 ids previstos por pessoa). É o descolamento da Parte 1 na direção
+oposta: um detector melhor não conserta a identidade. A RNN é a única que aproveita o detector
+melhor, e a vantagem dela sobre o Kalman cresce (350 vs 513 switches), embora ela também
+fragmente mais (2,37 ids por pessoa). Ressalva: os limiares de
+score (`det_thr` 0,5, `new_thr` 0,6) foram escolhidos com o FRCNN e não foram reajustados.
+
+Inferência de demonstração em MOT17-10 (`inferencia.ipynb` → `results/inferencia_mot17.mp4`):
+131 identidades previstas para 57 verdadeiras, IDF1 0,464.
+
+**Parte 3 — ablação** (`part3/table.md`, validação = MOT17-09):
+
+| célula | T=4 | T=8 | T=16 | T=32 |
+|---|---|---|---|---|
+| RNN  | 0,557 ± 0,011 | 0,545 ± 0,041 | 0,574 ± 0,028 | 0,511 ± 0,028 |
+| LSTM | 0,567 ± 0,001 | 0,552 ± 0,008 | 0,543 ± 0,010 | 0,561 ± 0,034 |
+| GRU  | 0,537 ± 0,024 | **0,594 ± 0,010** | 0,570 ± 0,023 | 0,590 ± 0,008 |
+
+Com uma única sequência de validação (26 identidades) o IDF1 é ruidoso e não ordena células nem
+janelas. O sinal que se repete é a **sobrevivência à oclusão, que sobe com T** nas três células
+(GRU: 0,17 em T=4 → 0,65 em T≥8; RNN: 0,38 → 0,69; LSTM: 0,40 → 0,71). Como no sintético, a janela
+de BPTT importa mais que a célula. A norma do gradiente do modelo final cai 1,8× em 4 passos, 3,7×
+em 16 e 8,1× em 32 (`part4/fig_grad_horizon.png`).
+
+**Parte 4 — galeria e correção** (`part4/fig_failure_{1,2,3}.png`). Os 383 switches do teste se
+dividem em **150 trocas entre vizinhos, 118 fragmentações curtas e 115 oclusões longas**. No
+sintético, 81% eram oclusão longa.
+
+1. *Oclusão longa (MOT17-10, gt 25, id 79 → 247).* Buraco de 404 quadros sem casamento (211
+   ocluído): nenhum `max_age` razoável atravessa isso.
+2. *Troca entre vizinhos (MOT17-10, gt 39, id 45 → 47).* Pessoas lado a lado; a detecção some por
+   8 quadros **sem oclusão**, a previsão desliza e outra track captura a detecção que volta.
+3. *Fragmentação curta (MOT17-10, gt 44, id 123 → 148).* Buraco de 9 quadros (6 ocluído); a
+   tentativa nova vence a track antiga.
+
+| | IDF1 teste | IDSW | #ids prev./verd. | oclusões com id |
+|---|---|---|---|---|
+| final (T=16, max_age 30) | 0,500 | 383 | 1,63 | 40% |
+| só max_age = 60 | 0,509 | 394 | 1,57 | 41% |
+| corrigido (T=48, buracos ≤ 40, max_age 60) | 0,503 | 444 | **1,17** | **51%** |
+
+A correção ataca a falha certa *do sintético*: a sobrevivência à oclusão sobe 11 pontos e a
+contagem melhora muito (1,63 → 1,17 ids por pessoa). Mas o IDF1 não se mexe e os switches sobem,
+porque tracks que vivem mais tempo em multidão capturam o vizinho. No MOT17 o gargalo é
+**aparência**: geometria sozinha não separa duas pessoas coladas.
+
+**Parte 5 — estresse** (`part5/table.md`):
+
+| degradação | mAP | IDF1 IoU | IDF1 Kalman | IDF1 RNN | IDSW IoU / Kalman / RNN |
+|---|---|---|---|---|---|
+| original | 0,590 | 0,410 | 0,493 | **0,500** | 591 / 397 / 383 |
+| leve | 0,522 | 0,335 | 0,438 | **0,456** | 674 / 405 / 391 |
+| média | 0,417 | 0,202 | 0,353 | **0,372** | 725 / 437 / 412 |
+| forte | 0,289 | 0,090 | **0,255** | 0,241 | 551 / 482 / 446 |
+
+Mesmo padrão do sintético: a RNN absorve a degradação leve e a média e perde para o Kalman em IDF1
+na forte. O IoU ingênuo desaba (0,41 → 0,09), porque detecções perdidas viram ids novos.
 
 ## Pergunta extra (Parte 5, alternativa não escolhida): queda de taxa de quadros
 

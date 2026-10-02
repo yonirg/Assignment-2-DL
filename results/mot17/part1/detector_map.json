@@ -1,0 +1,142 @@
+[
+ {
+  "detector": "DPM",
+  "seq": "MOT17-02-DPM",
+  "mAP": 0.2379581249885055
+ },
+ {
+  "detector": "DPM",
+  "seq": "MOT17-04-DPM",
+  "mAP": 0.45335010851705737
+ },
+ {
+  "detector": "DPM",
+  "seq": "MOT17-05-DPM",
+  "mAP": 0.4085173523314559
+ },
+ {
+  "detector": "DPM",
+  "seq": "MOT17-11-DPM",
+  "mAP": 0.5575838626026919
+ },
+ {
+  "detector": "DPM",
+  "seq": "MOT17-09-DPM",
+  "mAP": 0.5985759476856799
+ },
+ {
+  "detector": "DPM",
+  "seq": "MOT17-10-DPM",
+  "mAP": 0.4097863553333842
+ },
+ {
+  "detector": "DPM",
+  "seq": "MOT17-13-DPM",
+  "mAP": 0.24017399316418286
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-02-FRCNN",
+  "mAP": 0.3522647575172728
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-02-FRCNN",
+  "mAP": 0.46204136127157447
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-04-FRCNN",
+  "mAP": 0.5574551703643078
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-04-FRCNN",
+  "mAP": 0.6244092689648002
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-05-FRCNN",
+  "mAP": 0.5328532007826952
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-05-FRCNN",
+  "mAP": 0.6920320185185749
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-11-FRCNN",
+  "mAP": 0.6059136297408466
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-11-FRCNN",
+  "mAP": 0.681557447165225
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-09-FRCNN",
+  "mAP": 0.5679228313339926
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-09-FRCNN",
+  "mAP": 0.738995035234919
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-10-FRCNN",
+  "mAP": 0.5980872241214691
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-10-FRCNN",
+  "mAP": 0.6784092928537777
+ },
+ {
+  "detector": "FRCNN",
+  "seq": "MOT17-13-FRCNN",
+  "mAP": 0.5823993091157406
+ },
+ {
+  "detector": "torchvision",
+  "seq": "MOT17-13-FRCNN",
+  "mAP": 0.6516357693214065
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-02-SDP",
+  "mAP": 0.47726867962930386
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-04-SDP",
+  "mAP": 0.7618524521435592
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-05-SDP",
+  "mAP": 0.6462747896626219
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-11-SDP",
+  "mAP": 0.7400341140160451
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-09-SDP",
+  "mAP": 0.649831444173955
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-10-SDP",
+  "mAP": 0.7334031444167948
+ },
+ {
+  "detector": "SDP",
+  "seq": "MOT17-13-SDP",
+  "mAP": 0.5542744875467669
+ }
+]

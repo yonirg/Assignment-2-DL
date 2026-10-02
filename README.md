@@ -5,6 +5,7 @@ Rastreamento multiobjeto *identity-aware* sem rastreador pronto: detector congel
 fragmentações, AP), o NMS, a associação e a gestão de tracks foram todos escritos do zero.
 
 * Roteiro da apresentação, com os resultados e as respostas às perguntas: **[APRESENTACAO.md](APRESENTACAO.md)**
+* Slides (com notas do apresentador): **`PA2_apresentacao.pptx`**
 * Uso de IA: **[AI_LOG.md](AI_LOG.md)**
 
 ## Ambiente
@@ -48,19 +49,25 @@ python -m pa2.evaluate --data synth --ckpt checkpoints/synth_gru.pt
 python -m pa2.evaluate --data mot17 --mot-root data/MOT17 --split test --ckpt checkpoints/mot17_gru.pt
 ```
 
-Tudo de uma vez (todas as figuras/tabelas em `results/<data>/partN/`):
+Tudo de uma vez (todas as figuras/tabelas em `results/<data>/partN/`; ~1 h no sintético, ~5 min no
+MOT17, ambos em CPU):
 
 ```bash
 bash run_all.sh synth
 bash run_all.sh mot17 data/MOT17
 ```
 
-Detecções do torchvision (Faster R-CNN v2 COCO, classe person, NMS próprio):
+Detecções do torchvision (Faster R-CNN v2 COCO, classe person, NMS próprio; usa CUDA ou a GPU do
+Mac via MPS se houver, senão CPU):
 `python -m pa2.detect --seq data/MOT17/train/MOT17-02-FRCNN` → `det/det_tv.txt` (a Parte 1 compara
 automaticamente se o arquivo existir).
+Para rastrear com essas detecções: `python -m pa2.evaluate --data mot17 --split test --ckpt
+checkpoints/mot17_gru.pt --det-file det_tv.txt`.
 
 Inferência em qualquer sequência: abra **`inferencia.ipynb`**, troque `SEQ_PATH` e rode. Sai um
-`.mp4` com as identidades coloridas de forma consistente e a contagem de objetos únicos.
+`.mp4` com as identidades coloridas de forma consistente e a contagem de objetos únicos. O notebook
+está executado em MOT17-10 (`results/inferencia_mot17.mp4`); a versão sintética, que não precisa de
+download, está em `results/inferencia.mp4`.
 
 ## Checkpoints
 
@@ -69,7 +76,9 @@ Inferência em qualquer sequência: abra **`inferencia.ipynb`**, troque `SEQ_PAT
 | `checkpoints/synth_gru.pt` | modelo final da Trilha A no sintético (GRU h=61, T=16) |
 | `checkpoints/synth_gru_fix.pt` | modelo após a correção da Parte 4 (T=48, buracos até 40) |
 | `checkpoints/ablation/synth/*.pt` | 36 modelos da ablação (3 células × 4 janelas × 3 sementes) |
-| `checkpoints/mot17_gru.pt` | gerado por `python -m pa2.train --data mot17` (~2 min em CPU) |
+| `checkpoints/mot17_gru.pt` | modelo final da Trilha A no MOT17 (GRU h=61, T=16; ~15 s em CPU) |
+| `checkpoints/mot17_gru_fix.pt` | correção da Parte 4 no MOT17 (T=48, buracos até 40) |
+| `checkpoints/ablation/mot17/*.pt` | 36 modelos da ablação no MOT17 |
 
 ## Estrutura
 

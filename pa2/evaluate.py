@@ -13,7 +13,7 @@ import os
 import numpy as np
 
 from metrics import average_precision, evaluate_tracking, occlusion_survival
-from .data import mot17_sequences, synth_suite
+from .data import load_mot_sequence, mot17_sequences, synth_suite
 from .trackers import CHI2_4_99, build_tracker
 
 # Parâmetros de associação por fonte. No sintético foram escolhidos por
@@ -119,6 +119,8 @@ def main():
     p.add_argument("--trackers", nargs="+", default=["iou", "kalman", "rnn"])
     p.add_argument("--ckpt", default="checkpoints/synth_gru.pt")
     p.add_argument("--out", default=None)
+    p.add_argument("--det-file", default=None,
+                   help="MOT17: arquivo em det/ no lugar de det.txt (ex.: det_tv.txt, do pa2.detect)")
     args = p.parse_args()
 
     model = None
@@ -126,6 +128,10 @@ def main():
         from .models import MotionRNN
         model, _ = MotionRNN.from_checkpoint(args.ckpt)
     seqs = load_sequences(args)
+    if args.det_file:
+        for s in seqs:
+            d = os.path.dirname(s.img_dir)
+            s.dets = load_mot_sequence(d, det_file=os.path.join(d, "det", args.det_file)).dets
     results = {}
     for kind in args.trackers:
         kw = tracker_params(args.data, kind)
